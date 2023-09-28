@@ -39,3 +39,19 @@ func (kvs *KeyValueDataStore) Get(key string) (models.KeyValue, error) {
 
 	return *kv, nil
 }
+
+func (kvs *KeyValueDataStore) Set(kv models.KeyValue) error {
+	mu.Lock()
+	defer mu.Unlock()
+
+	kvs.records[kv.GetKey()] = kv.GetValue()
+	return nil
+}
+
+func (kvs *KeyValueDataStore) Delete(key string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
+	delete(kvs.records, key)
+	return nil
+}
