@@ -1,0 +1,38 @@
+pipeline {
+    agent none
+    tools {
+        go '1.21.1'
+    }
+    stages {
+        stage('checkout') {
+            agent any
+            options {
+                timeout(time: 30, unit: 'SECONDS')
+            }
+            steps {
+                echo 'checking out from github'
+                git branch: 'main', url: 'https://github.com/geekible/memstore'
+            }
+        }
+        
+        stage('build') {
+            agent any
+            options {
+                timeout(time: 60, unit: 'SECONDS')
+            }
+            steps {
+                echo 'building...'
+                sh 'go build .'
+                echo 'build complete'
+            }
+        }
+    }
+    post {
+            always {
+                emailext body: '${env.BUILD_ENV}\n${currentBuild.absoluteUrl}', 
+                    recipientProviders: [buildUser()], 
+                    subject: '${currentBuild.currentResult}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}]', 
+                    to: 'richardbennett@geekible.org'
+            }
+    }
+}
